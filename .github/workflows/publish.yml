@@ -1,0 +1,75 @@
+name: Publish to npm
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write # Mandatory: Allows GitHub to generate the OIDC token
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build node
+        run: npm run build
+
+      - name: Publish to npm
+        # No NPM_TOKEN env variable needed!
+        # --provenance is automatically enabled when using Trusted Publishers
+        env:
+          RELEASE_MODE: 'true'
+        run: npm publish --provenance --access public
+
+
+
+
+
+# name: Publish to npm
+
+# on:
+#   push:
+#     tags:
+#       - 'v*' # Triggers when you run 'npm run release' and push tags
+
+# jobs:
+#   publish:
+#     runs-on: ubuntu-latest
+#     permissions:
+#       contents: read
+#       id-token: write # Required for --provenance and OIDC auth
+#     steps:
+#       - name: Checkout repository
+#         uses: actions/checkout@v4
+
+#       - name: Setup Node.js
+#         uses: actions/setup-node@v4
+#         with:
+#           node-version: '24.6.0'
+#           registry-url: 'https://registry.npmjs.com'
+
+#       - name: Install dependencies
+#         run: npm ci
+
+#       - name: Build node
+#         # This triggers your "n8n-node build" script
+#         run: npm run build
+
+#       - name: Publish to npm
+#         # --provenance is mandatory for n8n verification after May 1, 2026
+#         run: npm publish --provenance --access public
+#         env:
+#           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
